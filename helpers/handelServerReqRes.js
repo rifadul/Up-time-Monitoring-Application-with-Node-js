@@ -8,6 +8,10 @@
 // dependencies
 const url = require('url');
 const { StringDecoder } = require('string_decoder');
+const routes = require('../routes');
+const {
+  notFoundHandler,
+} = require('../handlers/routeHandlers/notFoundHandler');
 
 // handler object - module scaffolding
 const handler = {};
@@ -24,12 +28,32 @@ handler.handelServerReqRes = (req, res) => {
   const headersObject = req.headers;
   const decoder = new StringDecoder('utf-8');
   let realData = '';
+
+  const requestProperties = {
+    parseUrl,
+    path,
+    trimmedPath,
+    method,
+    queryStringObject,
+    headersObject,
+  };
+
+  const chosenHandler = routes[trimmedPath]
+    ? routes[trimmedPath]
+    : notFoundHandler;
+
   req.on('data', (buffer) => {
     realData += decoder.write(buffer);
   });
   req.on('end', () => {
     realData += decoder.end();
-    console.log(path);
+    chosenHandler(requestProperties, (statusCode, payload) => {
+      statusCode = typeof statusCode === 'number' ? statusCode : 500;
+      payload = typeof payload === 'object' ? payload : {};
+      const payloadString = JSON.stringify(payload);
+      res.writeHead(statusCode);
+      res.end(payloadString);
+    });
     res.end(realData);
   });
 };
