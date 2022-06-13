@@ -7,6 +7,7 @@
 
 // dependencies
 const http = require('http');
+const environmentToExport = require('./helpers/environments');
 const { handelServerReqRes } = require('./helpers/handelServerReqRes');
 // app object - module scaffolding
 const app = {};
@@ -19,8 +20,8 @@ app.config = {
 // Create server
 app.createServer = () => {
   const server = http.createServer(app.handelServerReqRes);
-  server.listen(app.config.port, () => {
-    console.log(`listening to port ${app.config.port}`);
+  server.listen(environmentToExport.port, () => {
+    console.log(`listening to port ${environmentToExport.port}`);
   });
 };
 
